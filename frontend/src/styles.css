@@ -1,0 +1,108 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Inter, Segoe UI, sans-serif;
+  background: linear-gradient(160deg, #f7f9ff 0%, #eef7f4 100%);
+  color: #17212f;
+}
+
+.page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.card,
+.panel {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e6eaf2;
+  padding: 16px;
+  box-shadow: 0 10px 24px rgba(35, 52, 93, 0.08);
+}
+
+.card p {
+  margin: 0 0 6px;
+  color: #6e7787;
+}
+
+.card h2 {
+  margin: 0;
+}
+
+.form {
+  display: flex;
+  gap: 10px;
+}
+
+input,
+select,
+button {
+  border-radius: 8px;
+  border: 1px solid #cad4e5;
+  padding: 10px 12px;
+}
+
+button {
+  background: #155dfc;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.grid {
+  margin-top: 16px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  border-bottom: 1px solid #edf1f7;
+  padding: 8px;
+  text-align: left;
+  font-size: 14px;
+}
+
+.status.completed {
+  color: #0a7f3f;
+  font-weight: 600;
+}
+
+.status.failed {
+  color: #c02626;
+  font-weight: 600;
+}
+
+.status.processing,
+.status.pending {
+  color: #9a6700;
+  font-weight: 600;
+}
+
+.error {
+  color: #dc2626;
+}
