@@ -4,6 +4,13 @@ import axios from "axios";
 const API_BASE = "http://127.0.0.1:8000/api/v1";
 
 const formatRupees = (paise) => `Rs ${(paise / 100).toLocaleString("en-IN")}`;
+const makeIdempotencyKey = () => {
+  if (globalThis.crypto?.randomUUID) {
+    return globalThis.crypto.randomUUID();
+  }
+  // Fallback for browsers/environments without randomUUID support.
+  return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+};
 
 export default function App() {
   const [merchantId, setMerchantId] = useState(1);
@@ -38,19 +45,20 @@ export default function App() {
         {
           headers: {
             "X-Merchant-Id": String(merchantId),
-            "Idempotency-Key": crypto.randomUUID()
+            "Idempotency-Key": makeIdempotencyKey()
           }
         }
       );
       setAmountRupees("");
       fetchDashboard();
     } catch (err) {
+      console.error("Payout request error:", err);
       const apiDetail = err?.response?.data?.detail;
       const status = err?.response?.status;
       if (apiDetail) {
         setError(`${apiDetail}${status ? ` (HTTP ${status})` : ""}`);
       } else {
-        setError("Failed to request payout. Check backend at http://127.0.0.1:8000.");
+        setError(`Failed to request payout. ${err?.message || "Check backend at http://127.0.0.1:8000."}`);
       }
     } finally {
       setLoading(false);
