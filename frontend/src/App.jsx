@@ -1,14 +1,14 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 
-const API_BASE = "http://127.0.0.1:8000/api/v1";
+// Configure in deployment:
+// - Vite: set `VITE_API_BASE` to e.g. `https://<your-backend-host>/api/v1`
+const API_BASE =
+  import.meta.env?.VITE_API_BASE?.replace(/\/+$/, "") || "http://127.0.0.1:8000/api/v1";
 
 const formatRupees = (paise) => `Rs ${(paise / 100).toLocaleString("en-IN")}`;
 const makeIdempotencyKey = () => {
-  if (globalThis.crypto?.randomUUID) {
-    return globalThis.crypto.randomUUID();
-  }
-  // Fallback for browsers/environments without randomUUID support.
+  if (globalThis.crypto?.randomUUID) return globalThis.crypto.randomUUID();
   return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 };
 
@@ -29,6 +29,7 @@ export default function App() {
     fetchDashboard();
     const timer = setInterval(fetchDashboard, 3000);
     return () => clearInterval(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [merchantId]);
 
   const onSubmit = async (event) => {
@@ -40,13 +41,13 @@ export default function App() {
         `${API_BASE}/payouts`,
         {
           amount_paise: Math.round(Number(amountRupees) * 100),
-          bank_account_id: bankAccountId
+          bank_account_id: bankAccountId,
         },
         {
           headers: {
             "X-Merchant-Id": String(merchantId),
-            "Idempotency-Key": makeIdempotencyKey()
-          }
+            "Idempotency-Key": makeIdempotencyKey(),
+          },
         }
       );
       setAmountRupees("");
@@ -58,7 +59,7 @@ export default function App() {
       if (apiDetail) {
         setError(`${apiDetail}${status ? ` (HTTP ${status})` : ""}`);
       } else {
-        setError(`Failed to request payout. ${err?.message || "Check backend at http://127.0.0.1:8000."}`);
+        setError(`Failed to request payout. ${err?.message || "Network Error"}`);
       }
     } finally {
       setLoading(false);
