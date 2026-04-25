@@ -92,9 +92,6 @@ def create_payout_request(merchant_id: int, amount_paise: int, bank_account_id: 
         status=Payout.PENDING,
         idempotency_key=idempotency_key,
     )
-    # Process immediately so deployments without a background worker don't leave
-    # payouts stuck in pending state.
-    payout = settle_payout_now(payout.id)
     response = {
         "id": payout.id,
         "merchant_id": payout.merchant_id,
@@ -107,20 +104,6 @@ def create_payout_request(merchant_id: int, amount_paise: int, bank_account_id: 
     idem.response_code = 201
     idem.save(update_fields=["response_body", "response_code"])
     return response, 201
-
-
-def settle_payout_now(payout_id: int) -> Payout:
-    """
-    Best-effort immediate settlement loop.
-    Attempts up to 3 processing cycles so API callers get a terminal state
-    even when no separate worker process is running.
-    """
-    for _ in range(3):
-        payout = Payout.objects.get(pk=payout_id)
-        if payout.status in (Payout.COMPLETED, Payout.FAILED):
-            return payout
-        resolve_processing_payout(payout)
-    return Payout.objects.get(pk=payout_id)
 
 
 def resolve_processing_payout(payout: Payout):

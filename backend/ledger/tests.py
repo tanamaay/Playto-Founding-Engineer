@@ -1,5 +1,4 @@
 import uuid
-from unittest.mock import patch
 
 from django.test import TestCase
 from rest_framework.test import APIClient
@@ -52,24 +51,3 @@ class PayoutConcurrencyTest(TestCase):
         self.assertEqual(first.status_code, 201)
         self.assertEqual(second.status_code, 400)
         self.assertEqual(Payout.objects.count(), 1)
-
-
-class PayoutImmediateSettlementTest(TestCase):
-    def setUp(self):
-        self.merchant = Merchant.objects.create(name="Immediate Merchant")
-        create_credit(self.merchant, 10_000, "seed")
-        self.client = APIClient()
-
-    @patch("ledger.services.random.random", side_effect=[0.8, 0.8, 0.8])
-    def test_request_reaches_terminal_state_without_worker(self, _):
-        response = self.client.post(
-            "/api/v1/payouts",
-            {"amount_paise": 2000, "bank_account_id": "bank-terminal"},
-            format="json",
-            HTTP_X_MERCHANT_ID=str(self.merchant.id),
-            HTTP_IDEMPOTENCY_KEY=str(uuid.uuid4()),
-        )
-
-        self.assertEqual(response.status_code, 201)
-        self.assertEqual(response.json()["status"], Payout.FAILED)
-        self.assertEqual(response.json()["attempts"], 3)
